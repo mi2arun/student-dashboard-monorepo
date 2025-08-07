@@ -9,7 +9,7 @@ COPY package*.json ./
 
 # Install dependencies and TypeScript
 RUN npm cache clean --force
-RUN npm ci --include=dev
+RUN npm install
 RUN npm install -g typescript
 
 # Copy source code
@@ -31,14 +31,14 @@ RUN adduser -S nodejs -u 1001
 
 # Copy package files
 COPY package*.json ./
-COPY --from=builder /app/package-lock.json ./package-lock.json
 
 # Install only production dependencies
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copy built application from builder stage  
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/.env.production ./.env.production 2>/dev/null || true
+# Copy environment file if it exists
+RUN touch .env.production
 
 # Create logs directory
 RUN mkdir logs && chown nodejs:nodejs logs
