@@ -16,7 +16,7 @@ const router = Router();
 // GET /api/user/profile - Get user profile with dashboard data
 router.get('/profile', authenticateToken, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
     const user = await User.findByPk(userId);
 
     if (!user) {
@@ -44,7 +44,7 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
 // PUT /api/user/profile - Update user profile
 router.put('/profile', authenticateToken, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
     const user = await User.findByPk(userId);
 
     if (!user) {
@@ -83,15 +83,15 @@ router.put('/profile', authenticateToken, async (req: Request, res: Response) =>
 // GET /api/user/dashboard - Get dashboard statistics
 router.get('/dashboard', authenticateToken, (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
     const enrolledCourses = getUserEnrolledCourses(userId);
     const achievements = getUserAchievements(userId);
 
     const dashboardData = {
       id: userId,
-      name: req.user?.name || 'Student',
-      email: req.user?.email || '',
-      avatar: (req.user as any)?.avatar,
+      name: (req as any).user?.name || 'Student',
+      email: (req as any).user?.email || '',
+      avatar: ((req as any).user as any)?.avatar,
       studyStats: mockStudyStats,
       enrolledSubjects: mockSubjects,
       recentTests: mockTestMilestones,
@@ -111,7 +111,7 @@ router.get('/dashboard', authenticateToken, (req: Request, res: Response) => {
 // GET /api/user/achievements - Get user achievements
 router.get('/achievements', authenticateToken, (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
     const achievements = getUserAchievements(userId);
 
     const { category } = req.query;
@@ -152,7 +152,7 @@ router.get('/achievements', authenticateToken, (req: Request, res: Response) => 
 // GET /api/user/study-stats - Get detailed study statistics
 router.get('/study-stats', authenticateToken, (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
     const enrolledCourses = getUserEnrolledCourses(userId);
 
     const detailedStats = {

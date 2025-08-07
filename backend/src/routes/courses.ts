@@ -82,8 +82,8 @@ router.get('/:id', optionalAuth, (req: Request, res: Response) => {
 
     // Check if user is enrolled (if authenticated)
     let isEnrolled = false;
-    if (req.user) {
-      const enrolledCourses = getUserEnrolledCourses(req.user.id);
+    if ((req as any).user) {
+      const enrolledCourses = getUserEnrolledCourses((req as any).user.id);
       isEnrolled = enrolledCourses.some(ec => ec.id === id);
     }
 
@@ -100,7 +100,7 @@ router.get('/:id', optionalAuth, (req: Request, res: Response) => {
 // GET /api/courses/enrolled/me - Get user's enrolled courses
 router.get('/enrolled/me', authenticateToken, (req: Request, res: Response) => {
   try {
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
     const enrolledCourses = getUserEnrolledCourses(userId);
 
     const { filter, sort } = req.query;
@@ -169,7 +169,7 @@ router.get('/enrolled/me', authenticateToken, (req: Request, res: Response) => {
 router.post('/:id/enroll', authenticateToken, (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
 
     const course = findCourseById(id);
     if (!course) {
@@ -207,7 +207,7 @@ router.post('/:id/enroll', authenticateToken, (req: Request, res: Response) => {
 router.delete('/:id/unenroll', authenticateToken, (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = req.userId!;
+    const userId = (req as any).userId!;
 
     const enrolledCourses = getUserEnrolledCourses(userId);
     const enrollmentIndex = enrolledCourses.findIndex(ec => ec.id === id);
