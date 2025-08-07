@@ -18,6 +18,8 @@
     "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
     "test": "cd backend && npm test && cd ../frontend && npm test",
     "deploy": "cd backend && ./scripts/deploy.sh production",
+    "deploy:server": "./deploy-server.sh",
+    "start:server": "concurrently \"cd backend && npm run start:prod\" \"cd frontend && serve -s build -l 3000\"",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
