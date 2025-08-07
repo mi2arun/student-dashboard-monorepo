@@ -37,6 +37,8 @@ class ApiService {
     try {
       const response = await fetch(url, {
         headers: this.getAuthHeaders(),
+        credentials: 'include',
+        mode: 'cors',
         ...options,
       });
 
