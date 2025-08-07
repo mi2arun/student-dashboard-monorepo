@@ -52,14 +52,29 @@ if (process.env.NODE_ENV === 'production') {
 
 // CORS configuration
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? (process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com'])
+  ? (process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || ['http://localhost:3000'])
   : ['http://localhost:3000', 'http://127.0.0.1:3000'];
 
+console.log('CORS allowed origins:', allowedOrigins);
+
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is allowed
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.warn('CORS blocked origin:', origin);
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Set-Cookie']
 }));
 
 // Compression middleware
@@ -67,6 +82,15 @@ app.use(compression());
 
 // Logging middleware
 app.use(morgan('combined'));
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -80,6 +104,17 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development'
   }, 'Server is healthy');
+});
+
+// CORS debug endpoint
+app.get('/debug/cors', (req, res) => {
+  APIResponseUtil.success(res, {
+    origin: req.headers.origin,
+    allowedOrigins: allowedOrigins,
+    headers: req.headers,
+    method: req.method,
+    corsEnabled: true
+  }, 'CORS debug information');
 });
 
 // API Routes
